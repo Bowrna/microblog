@@ -17,3 +17,4 @@ class Config(object):
     MAIL_USERNAME = os.environ.get('MAIL_USERNAME')
     MAIL_PASSWORD = os.environ.get('MAIL_PASSWORD')
     LANGUAGES = ['en', 'es']
+    ELASTICSEARCH_URL = os.environ.get('ELASTICSEARCH_URL')

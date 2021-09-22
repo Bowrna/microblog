@@ -1,12 +1,14 @@
 from datetime import datetime
-from flask import render_template, flash, redirect, url_for, request
+from flask import render_template, flash, redirect, url_for, request, g
 from flask_login import login_user, current_user, logout_user, login_required
 from werkzeug.urls import url_parse
+from langdetect import detect, LangDetectException
+from flask_babel import _, get_locale
+
 from app import app, db
-from app.forms import LoginForm, RegistrationForm, EditProfileForm, EmptyForm, PostForm, ResetPasswordRequestForm, ResetPasswordForm
+from app.forms import LoginForm, RegistrationForm, EditProfileForm, EmptyForm, PostForm, ResetPasswordRequestForm, ResetPasswordForm, SearchForm
 from app.models import User, Post
 from app.email import send_password_reset_email
-from langdetect import detect, LangDetectException
 
 @app.route('/', methods=['GET','POST'])
 @app.route('/index', methods=['GET','POST'])
@@ -92,6 +94,8 @@ def before_request():
     if current_user.is_authenticated:
         current_user.last_seen = datetime.utcnow()
         db.session.commit()
+        g.search_form = SearchForm()
+    g.locale = str(get_locale())
 
 @app.route('/edit_profile', methods=['GET', 'POST'])
 def edit_profile():
@@ -182,4 +186,19 @@ def reset_password(token):
         flash('Your password has been reset')
         return redirect(url_for('login'))
     return render_template('reset_password.html', form = form)
-            
+
+@app.route('/search')
+@login_required
+def search():
+    if not g.search_form.validate():
+        return redirect(url_for('explore'))
+    page = request.args.get('page', 1, type=int)
+    posts, total = Post.search(g.search_form.q.data, page,
+                               app.config['POSTS_PER_PAGE'])
+    next_url = url_for('search', q=g.search_form.q.data, page=page + 1) \
+        if total > page * app.config['POSTS_PER_PAGE'] else None
+    prev_url =  url_for('search', q=g.search_form.q.data, page=page - 1) \
+        if page > 1 else None
+    return render_template('search.html', title=_('Search'), posts=posts,
+                           next_url=next_url, prev_url=prev_url)
+
