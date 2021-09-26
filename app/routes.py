@@ -191,10 +191,13 @@ def reset_password(token):
 @login_required
 def search():
     if not g.search_form.validate():
+        print('not valid')
         return redirect(url_for('explore'))
     page = request.args.get('page', 1, type=int)
     posts, total = Post.search(g.search_form.q.data, page,
                                app.config['POSTS_PER_PAGE'])
+    print(posts)
+    print('total:', total)
     next_url = url_for('search', q=g.search_form.q.data, page=page + 1) \
         if total > page * app.config['POSTS_PER_PAGE'] else None
     prev_url =  url_for('search', q=g.search_form.q.data, page=page - 1) \

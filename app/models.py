@@ -11,10 +11,11 @@ followers = db.Table('followers',
         db.Column('follower_id',db.Integer, db.ForeignKey('user.id')),
         db.Column('followed_id',db.Integer, db.ForeignKey('user.id'))
     )
-    
+
 class SearchableMixin(object):
     @classmethod
     def search(cls, expression, page, per_page):
+        print('Expression to query:', expression)
         ids, total = query_index(cls.__tablename__, expression, page, per_page)
         if total == 0:
             return cls.query.filter_by(id=0), 0
