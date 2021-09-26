@@ -22,7 +22,6 @@ mail = Mail(app)
 bootstrap = Bootstrap(app)
 moment = Moment(app)
 babel = Babel(app)
-
 app.elasticsearch = Elasticsearch([app.config['ELASTICSEARCH_URL']]) \
         if app.config['ELASTICSEARCH_URL'] else None
 
