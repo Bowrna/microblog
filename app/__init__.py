@@ -8,6 +8,8 @@ from flask_bootstrap import Bootstrap
 from flask_moment import Moment
 from flask_babel import Babel
 from elasticsearch import Elasticsearch
+from redis import Redis
+import rq
 
 import logging
 from logging.handlers import RotatingFileHandler, SMTPHandler
@@ -24,6 +26,8 @@ moment = Moment(app)
 babel = Babel(app)
 app.elasticsearch = Elasticsearch([app.config['ELASTICSEARCH_URL']]) \
         if app.config['ELASTICSEARCH_URL'] else None
+app.redis = Redis.from_url(app.config['REDIS_URL'])
+app.task_queue = rq.Queue('microblog-tasks', connection=app.redis)
 
 if not app.debug:
     if app.config['MAIL_SERVER']:
